@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Back End Assessment</title>
+  </head>
+  <body class="container">
+    <button id="complimentButton">Get a compliment</button>
+    <button id="fortuneButton">Get a fortune</button>
+
+    <div>
+      <input
+        type="text"
+        id="movieInput"
+        placeholder="Input movies to watch here!"
+      />
+      <button id="submit">Submit</button>
+      <ul id="movie-list"></ul>
+      <input
+        type="text"
+        id="whatToUpdate"
+        placeholder="Movie you want to update"
+      />
+      <input
+        type="text"
+        id="whatToUpdateTo"
+        placeholder="What you want to update to"
+      />
+      <button id="updateButton" onclick="updateMovies()">Update</button>
+    </div>
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+      const baseURL = `http://localhost:4000/api`;
+      document.getElementById("complimentButton").onclick = function () {
+        axios.get(`${baseURL}/compliment/`).then(function (response) {
+          const data = response.data;
+          alert(data);
+        });
+      };
+      document.getElementById("fortuneButton").onclick = function () {
+        axios.get(`${baseURL}/fortune/`).then(function (response) {
+          const data = response.data;
+          alert(data);
+        });
+      };
+      document.getElementById("submit").onclick = function () {
+        axios
+          .post(`${baseURL}/movie/`, {
+            movieName: movieInput.value,
+          })
+          .then(function (response) {
+            const data = response.data;
+            document.getElementById("movie-list").innerHTML = "";
+            renderMovies(response);
+          })
+          .catch(function (error) {
+            alert(error.response.data);
+          });
+      };
+      axios.get(`${baseURL}/movie/`).then(function (response) {
+        renderMovies(response);
+      });
+      const deleteMovie = (movieName) => {
+        axios.delete(`${baseURL}/movie/` + movieName).then(function (response) {
+          document.getElementById("movie-list").innerHTML = "";
+          renderMovies(response);
+        });
+      };
+      const updateMovies = (response) => {
+        const movieToUpdate = document.getElementById("whatToUpdate").value;
+        const updatedMovie = document.getElementById("whatToUpdateTo").value;
+        const body = { movieToUpdate, updatedMovie };
+        axios.put(`${baseURL}/movie`, body).then(function (response) {
+          document.getElementById("movie-list").innerHTML = "";
+          renderMovies(response);
+        });
+      };
+      const renderMovies = (response) => {
+        response.data.forEach((movie) => {
+          document.getElementById("movie-list").innerHTML += `
+            <li id='${movie}'>${movie}
+              <span onclick = 'deleteMovie("${movie}")' style="cursor:pointer"> ⓧ</span>
+            </li>`;
+        });
+      };
+    </script>
+  </body>
+</html>
